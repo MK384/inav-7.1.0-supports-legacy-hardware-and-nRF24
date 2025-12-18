@@ -47,6 +47,7 @@
 #include "drivers/opflow/opflow.h"
 #include "drivers/opflow/opflow_fake.h"
 #include "drivers/opflow/opflow_virtual.h"
+#include "drivers/opflow/adns3080.h"
 
 #include "fc/config.h"
 #include "fc/runtime_config.h"
@@ -113,6 +114,14 @@ static bool opflowDetect(opflowDev_t * dev, uint8_t opflowHardwareToUse)
             }
 #endif
             break;
+
+#if defined(USE_OPFLOW_ADNS3080)    
+        case OPFLOW_ADNS3080:
+            if (virtualOpflowDetect(dev, &opflowADNS3080Vtable)) {
+                opflowHardware = OPFLOW_ADNS3080;
+            }            
+        break;
+#endif
 
         case OPFLOW_NONE:
             opflowHardware = OPFLOW_NONE;

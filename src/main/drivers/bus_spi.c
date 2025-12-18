@@ -63,8 +63,11 @@
 #if defined(USE_SPI_DEVICE_1)
 static const uint32_t spiDivisorMapFast[] = {
     SPI_BaudRatePrescaler_256,    // SPI_CLOCK_INITIALIZATON      328.125 KBits/s
-    SPI_BaudRatePrescaler_128,    // SPI_CLOCK_SLOW               656.25 KBits/s
-    SPI_BaudRatePrescaler_8,      // SPI_CLOCK_STANDARD           10.5 MBits/s
+    SPI_BaudRatePrescaler_128,    // SPI_CLOCK_SUPER_SLOW         656.25 KBits/s
+    SPI_BaudRatePrescaler_64,     // SPI_CLOCK_SLOW               1.3125 MBits/s
+    SPI_BaudRatePrescaler_32,     // SPI_CLOCK_STANDARD           2.625 MBits/s
+    SPI_BaudRatePrescaler_16,     // SPI_CLOCK_MEDIUM             5.25 MBits/s
+    SPI_BaudRatePrescaler_8,      // SPI_CLOCK_ABOVE_MEDIUM       10.5 MBits/s
     SPI_BaudRatePrescaler_4,      // SPI_CLOCK_FAST               21.0 MBits/s
     SPI_BaudRatePrescaler_2       // SPI_CLOCK_ULTRAFAST          42.0 MBits/s
 };
@@ -73,9 +76,12 @@ static const uint32_t spiDivisorMapFast[] = {
 #if defined(USE_SPI_DEVICE_2) || defined(USE_SPI_DEVICE_3)
 static const uint32_t spiDivisorMapSlow[] = {
     SPI_BaudRatePrescaler_256,    // SPI_CLOCK_INITIALIZATON      164.062 KBits/s
+    SPI_BaudRatePrescaler_128,    // SPI_CLOCK_SUPER_SLOW         328.125 KBits/s
     SPI_BaudRatePrescaler_64,     // SPI_CLOCK_SLOW               656.25 KBits/s
-    SPI_BaudRatePrescaler_4,      // SPI_CLOCK_STANDARD           10.5 MBits/s
-    SPI_BaudRatePrescaler_2,      // SPI_CLOCK_FAST               21.0 MBits/s
+    SPI_BaudRatePrescaler_32,     // SPI_CLOCK_STANDARD           1.3125 MBits/s
+    SPI_BaudRatePrescaler_16,     // SPI_CLOCK_MEDIUM             2.625 MBits/s
+    SPI_BaudRatePrescaler_8,      // SPI_CLOCK_ABOVE_MEDIUM       5.25 MBits/s
+    SPI_BaudRatePrescaler_4,      // SPI_CLOCK_FAST               10.5 MBits/s
     SPI_BaudRatePrescaler_2       // SPI_CLOCK_ULTRAFAST          21.0 MBits/s
 };
 #endif
@@ -161,8 +167,10 @@ bool spiInitDevice(SPIDevice device, bool leadingEdge)
     spiInit.SPI_DataSize = SPI_DataSize_8b;
     spiInit.SPI_NSS = SPI_NSS_Soft;
     spiInit.SPI_FirstBit = SPI_FirstBit_MSB;
-    spiInit.SPI_CRCPolynomial = 7;
-    spiInit.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+    spiInit.SPI_CRCPolynomial = 10;
+    spiInit.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+    spiInit.SPI_CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    
 
     if (leadingEdge) {
         // SPI_MODE0
@@ -253,7 +261,7 @@ void spiSetSpeed(SPI_TypeDef *instance, SPIClockSpeed_e speed)
 #define BR_CLEAR_MASK 0xFFC7
     SPIDevice device = spiDeviceByInstance(instance);
     if (device == SPIINVALID) {
-        return;
+        return; 
     }
 
     SPI_Cmd(instance, DISABLE);
@@ -264,6 +272,22 @@ void spiSetSpeed(SPI_TypeDef *instance, SPIClockSpeed_e speed)
     instance->CR1 = tempRegister;
 
     SPI_Cmd(instance, ENABLE);
+}
+
+SPIClockSpeed_e spiGetSpeed(SPI_TypeDef *instance){
+
+#define BR_BITS_MASK 0x0038
+    SPIDevice device = spiDeviceByInstance(instance);
+    if (device == SPIINVALID) {
+        return SPI_CLOCK_UNKOWN; 
+    }
+
+    uint16_t spiPrescaler = instance->CR1 & BR_BITS_MASK;
+    for (size_t speed = 0; speed < SPI_CLOCK_COUNT; speed++)
+        if (spiPrescaler == spiHardwareMap[device].divisorMap[speed])
+            return (SPIClockSpeed_e)speed;
+    
+    return SPI_CLOCK_UNKOWN;
 }
 
 uint16_t spiGetErrorCounter(SPI_TypeDef *instance)

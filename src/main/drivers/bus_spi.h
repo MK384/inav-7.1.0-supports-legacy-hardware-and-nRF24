@@ -43,12 +43,38 @@
   Flash M25p16 tolerates 20mhz, SPI_CLOCK_FAST should sit around 20 or less.
 */
 
+// SPI_DEVICE_1
+// SPI_CLOCK_INITIALIZATON      328.125 KBits/s
+// SPI_CLOCK_SUPER_SLOW         656.25 KBits/s
+// SPI_CLOCK_SLOW               1.3125 MBits/s
+// SPI_CLOCK_STANDARD           2.625 MBits/s
+// SPI_CLOCK_MEDIUM             5.25 MBits/s
+// SPI_CLOCK_ABOVE_MEDIUM       10.5 MBits/s
+// SPI_CLOCK_FAST               21.0 MBits/s
+// SPI_CLOCK_ULTRAFAST          42.0 MBits/s
+
+
+// SPI_DEVICE_2 & SPI_DEVICE_3
+// SPI_CLOCK_INITIALIZATON      164.062 KBits/s
+// SPI_CLOCK_SUPER_SLOW         328.125 KBits/s
+// SPI_CLOCK_SLOW               656.25 KBits/s
+// SPI_CLOCK_STANDARD           1.3125 MBits/s
+// SPI_CLOCK_MEDIUM             2.625 MBits/s
+// SPI_CLOCK_ABOVE_MEDIUM       5.25 MBits/s
+// SPI_CLOCK_FAST               10.5 MBits/s
+// SPI_CLOCK_ULTRAFAST          21.0 MBits/s
+
 typedef enum {
-    SPI_CLOCK_INITIALIZATON = 0,    // Lowest possible
-    SPI_CLOCK_SLOW          = 1,    // ~1 MHz
-    SPI_CLOCK_STANDARD      = 2,    // ~10MHz
-    SPI_CLOCK_FAST          = 3,    // ~20MHz
-    SPI_CLOCK_ULTRAFAST     = 4     // Highest possible
+    SPI_CLOCK_INITIALIZATON = 0,    // Lowest Possible
+    SPI_CLOCK_SUPER_SLOW    = 1,   
+    SPI_CLOCK_SLOW          = 2,         
+    SPI_CLOCK_STANDARD      = 3,     
+    SPI_CLOCK_MEDIUM        = 4,       
+    SPI_CLOCK_ABOVE_MEDIUM  = 5, 
+    SPI_CLOCK_FAST          = 6,         
+    SPI_CLOCK_ULTRAFAST     = 7,     // Highest Possible
+    SPI_CLOCK_COUNT         = 8,     // number of clock speeds
+    SPI_CLOCK_UNKOWN        = 9      // for error reporting
 } SPIClockSpeed_e;
 
 typedef enum SPIDevice {
@@ -107,6 +133,7 @@ bool spiInitDevice(SPIDevice device, bool leadingEdge);
 #else
     bool spiIsBusBusy(SPI_TypeDef *instance);
     void spiSetSpeed(SPI_TypeDef *instance, SPIClockSpeed_e speed);
+    SPIClockSpeed_e spiGetSpeed(SPI_TypeDef *instance);
     uint8_t spiTransferByte(SPI_TypeDef *instance, uint8_t in);
     bool spiTransfer(SPI_TypeDef *instance, uint8_t *rxData, const uint8_t *txData, int len);
 
