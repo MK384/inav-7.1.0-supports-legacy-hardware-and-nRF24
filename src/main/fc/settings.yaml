@@ -4,7 +4,7 @@ tables:
   - name: gyro_lpf
     values: ["256HZ", "188HZ", "98HZ", "42HZ", "20HZ", "10HZ"]
   - name: acc_hardware
-    values: ["NONE", "AUTO", "MPU6000", "MPU6500", "MPU9250", "BMI160", "ICM20689", "BMI088", "ICM42605", "BMI270","LSM6DXX",  "FAKE"]
+    values: ["NONE", "AUTO", "MPU6050","MPU6000", "MPU6500", "MPU9250", "BMI160", "ICM20689", "BMI088", "ICM42605", "BMI270","LSM6DXX",  "FAKE"]
     enum: accelerationSensor_e
   - name: rangefinder_hardware
     values: ["NONE", "SRF10", "VL53L0X", "MSP", "BENEWAKE", "VL53L1X", "US42", "TOF10120_I2C", "FAKE"]
@@ -13,7 +13,7 @@ tables:
     values: ["NONE", "AUTO", "HMC5883", "AK8975", "MAG3110", "AK8963", "IST8310", "QMC5883", "MPU9250", "IST8308", "LIS3MDL", "MSP", "RM3100", "VCM5883", "MLX90393", "FAKE"]
     enum: magSensor_e
   - name: opflow_hardware
-    values: ["NONE", "CXOF", "MSP", "FAKE"]
+    values: ["NONE", "CXOF", "ADNS3080","MSP", "FAKE"]
     enum: opticalFlowSensor_e
   - name: baro_hardware
     values: ["NONE", "AUTO", "BMP085", "MS5611", "BMP280", "MS5607", "LPS25H", "SPL06", "BMP388", "DPS310", "B2SMPB", "MSP", "FAKE"]
@@ -22,10 +22,13 @@ tables:
     values: ["NONE", "AUTO", "MS4525", "ADC", "VIRTUAL", "FAKE", "MSP", "DLVR-L10D"]
     enum: pitotSensor_e
   - name: receiver_type
-    values: ["NONE", "SERIAL", "MSP", "SIM (SITL)"]
+    values: ["NONE", "SERIAL", "MSP", "SIM (SITL)", "SPI (NRF24)"]
     enum: rxReceiverType_e
   - name: serial_rx
     values: ["SPEK1024", "SPEK2048", "SBUS", "SUMD", "IBUS", "JETIEXBUS", "CRSF", "FPORT", "SBUS_FAST", "FPORT2", "SRXL2", "GHST", "MAVLINK", "FBUS"]
+  - name: rx_spi_protocol
+    values: ["V202_250K", "V202_1M", "SYMA_X", "SYMA_X5C", "CX10", "CX10A", "H8_3D", "INAV", "ELERES"]
+    enum: rx_spi_protocol_e
   - name: blackbox_device
     values: ["SERIAL", "SPIFLASH", "SDCARD"]
   - name: motor_pwm_protocol

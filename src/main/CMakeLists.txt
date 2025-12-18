@@ -88,6 +88,8 @@ main_sources(COMMON_SRC
     drivers/accgyro/accgyro_mpu.h
     drivers/accgyro/accgyro_mpu6000.c
     drivers/accgyro/accgyro_mpu6000.h
+    drivers/accgyro/accgyro_mpu6050.c
+    drivers/accgyro/accgyro_mpu6050.h
     drivers/accgyro/accgyro_mpu6500.c
     drivers/accgyro/accgyro_mpu6500.h
     drivers/accgyro/accgyro_mpu9250.c
@@ -199,6 +201,9 @@ main_sources(COMMON_SRC
     drivers/opflow/opflow_fake.h
     drivers/opflow/opflow_virtual.c
     drivers/opflow/opflow_virtual.h
+    drivers/opflow/adns3080.h
+    drivers/opflow/adns3080_interface.h
+    drivers/opflow/adns3080.c
 
     drivers/osd.c
     drivers/osd.h
@@ -264,6 +269,13 @@ main_sources(COMMON_SRC
     drivers/usb_msc.h
     drivers/vtx_common.c
     drivers/vtx_common.h
+
+    drivers/rx_spi.c
+    drivers/rx_spi.h
+  
+    drivers/nrf24_interface.h
+    drivers/nrf24.h
+    drivers/nrf24.c
 
     fc/cli.c
     fc/cli.h
@@ -370,7 +382,10 @@ main_sources(COMMON_SRC
     io/rcdevice.h
     io/rcdevice_cam.c
     io/rcdevice_cam.h
-
+    io/asyncfatfs/asyncfatfs.c
+    io/asyncfatfs/asyncfatfs.h
+    io/asyncfatfs/fat_standard.c
+    io/asyncfatfs/fat_standard.h
     io/osd/custom_elements.c
 
     msp/msp_serial.c
@@ -402,6 +417,8 @@ main_sources(COMMON_SRC
     rx/mavlink.h
     rx/msp.c
     rx/msp.h
+    rx/nrf24_inav.c
+    rx/nrf24_inav.h
     rx/msp_override.c
     rx/msp_override.h
     rx/frsky_crc.c
