@@ -31,5 +31,7 @@
 
 extern virtualOpflowVTable_t opflowCxofVtable;
 extern virtualOpflowVTable_t opflowMSPVtable;
+extern virtualOpflowVTable_t opflowADNS3080Vtable;
+
 
 void mspOpflowReceiveNewData(uint8_t * bufferPtr);

@@ -169,7 +169,6 @@ bool spiInitDevice(SPIDevice device, bool leadingEdge)
     spiInit.SPI_FirstBit = SPI_FirstBit_MSB;
     spiInit.SPI_CRCPolynomial = 10;
     spiInit.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
-    spiInit.SPI_CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     
 
     if (leadingEdge) {
