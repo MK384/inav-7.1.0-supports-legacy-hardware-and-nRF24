@@ -14,19 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Cleanflight.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
 #include <stdint.h>
 
-#include "platform.h"
 
-#include "config/feature.h"
-#include "fc/config.h"
-#include "flight/mixer.h"
-#include "io/serial.h"
-#include "rx/rx.h"
-#include "sensors/compass.h"
-
-void targetConfiguration(void)
-{
-    compassConfigMutable()->mag_align = CW90_DEG_FLIP;
-}
+/**
+ * Inits the internal hardware used by the rx device (nrf24)
+ */
+bool rxSpiDeviceInit(void);

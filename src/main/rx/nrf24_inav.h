@@ -15,18 +15,12 @@
  * along with Cleanflight.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "platform.h"
 
-#include "config/feature.h"
-#include "fc/config.h"
-#include "flight/mixer.h"
-#include "io/serial.h"
-#include "rx/rx.h"
-#include "sensors/compass.h"
+bool inavNrf24Init(const rxConfig_t *initialRxConfig, rxRuntimeConfig_t *rxRuntimeConfig);
 
-void targetConfiguration(void)
-{
-    compassConfigMutable()->mag_align = CW90_DEG_FLIP;
-}
+

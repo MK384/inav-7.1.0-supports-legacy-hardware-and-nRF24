@@ -40,6 +40,7 @@
 #include "drivers/serial.h"
 #include "drivers/time.h"
 
+
 #include "fc/config.h"
 #include "fc/rc_controls.h"
 #include "fc/rc_modes.h"
@@ -64,6 +65,10 @@
 #include "rx/ghst.h"
 #include "rx/mavlink.h"
 #include "rx/sim.h"
+#include "nrf24_inav.h"
+
+
+//#define DEBUG_RX_SIGNAL_LOSS
 
 const char rcChannelLetters[] = "AERT";
 
@@ -100,6 +105,10 @@ static uint8_t rcSampleIndex = 0;
 
 PG_REGISTER_WITH_RESET_TEMPLATE(rxConfig_t, rxConfig, PG_RX_CONFIG, 12);
 
+#ifndef RX_SPI_DEFAULT_PROTOCOL
+#define RX_SPI_DEFAULT_PROTOCOL 0
+#endif
+
 #ifndef SERIALRX_PROVIDER
 #define SERIALRX_PROVIDER 0
 #endif
@@ -113,15 +122,18 @@ PG_RESET_TEMPLATE(rxConfig_t, rxConfig,
     .receiverType = DEFAULT_RX_TYPE,
     .rcmap = {0, 1, 3, 2},      // Default to AETR map
     .halfDuplex = SETTING_SERIALRX_HALFDUPLEX_DEFAULT,
-    .serialrx_provider = SERIALRX_PROVIDER,
-#ifdef USE_SPEKTRUM_BIND
+
+    .serialrx_provider = SERIALRX_PROVIDER, 
+    .rx_spi_protocol = RX_SPI_DEFAULT_PROTOCOL,
+
+#ifdef USE_SPEKTRUM_BIND    
     .spektrum_sat_bind = SETTING_SPEKTRUM_SAT_BIND_DEFAULT,
-#endif
+#endif    
     .serialrx_inverted = SETTING_SERIALRX_INVERTED_DEFAULT,
     .mincheck = SETTING_MIN_CHECK_DEFAULT,
     .maxcheck = SETTING_MAX_CHECK_DEFAULT,
     .rx_min_usec = SETTING_RX_MIN_USEC_DEFAULT,          // any of first 4 channels below this value will trigger rx loss detection
-    .rx_max_usec = SETTING_RX_MAX_USEC_DEFAULT,          // any of first 4 channels above this value will trigger rx loss detection
+    .rx_max_usec = SETTING_RX_MAX_USEC_DEFAULT,         // any of first 4 channels above this value will trigger rx loss detection
     .rssi_channel = SETTING_RSSI_CHANNEL_DEFAULT,
     .rssiMin = SETTING_RSSI_MIN_DEFAULT,
     .rssiMax = SETTING_RSSI_MAX_DEFAULT,
@@ -133,10 +145,10 @@ PG_RESET_TEMPLATE(rxConfig_t, rxConfig,
     .mspOverrideChannels = SETTING_MSP_OVERRIDE_CHANNELS_DEFAULT,
 #endif
     .rssi_source = SETTING_RSSI_SOURCE_DEFAULT,
-#ifdef USE_SERIALRX_SRXL2
+#ifdef USE_SERIALRX_SRXL2    
     .srxl2_unit_id = SETTING_SRXL2_UNIT_ID_DEFAULT,
     .srxl2_baud_fast = SETTING_SRXL2_BAUD_FAST_DEFAULT,
-#endif
+#endif    
 );
 
 void resetAllRxChannelRangeConfigurations(void)
@@ -163,7 +175,6 @@ static uint16_t nullReadRawRC(const rxRuntimeConfig_t *rxRuntimeConfig, uint8_t 
 {
     UNUSED(rxRuntimeConfig);
     UNUSED(channel);
-
     return 0;
 }
 
@@ -254,6 +265,25 @@ bool serialRxInit(const rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig
 }
 #endif
 
+#ifdef USE_SPI_RX
+bool spiRxInit(const rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig)
+{
+    bool enabled = false;
+    switch (rxConfig->rx_spi_protocol) {
+#ifdef USE_NRF24RX_INAV
+    case NRF24RX_INAV:
+        enabled = inavNrf24Init(rxConfig, rxRuntimeConfig);
+        break;
+#endif
+
+    default:
+        enabled = false;
+        break;
+    }
+    return enabled;
+}
+#endif
+
 void rxInit(void)
 {
     lqTrackerReset(&rxLQTracker);
@@ -293,7 +323,6 @@ void rxInit(void)
     }
 
     switch (rxConfig()->receiverType) {
-
 #ifdef USE_SERIAL_RX
         case RX_TYPE_SERIAL:
             if (!serialRxInit(rxConfig(), &rxRuntimeConfig)) {
@@ -314,6 +343,16 @@ void rxInit(void)
     case RX_TYPE_SIM:
         rxSimInit(rxConfig(), &rxRuntimeConfig);
         break;
+#endif
+
+#ifdef USE_SPI_RX
+        case RX_TYPE_SPI:
+            if (!spiRxInit(rxConfig(), &rxRuntimeConfig)) {
+                rxConfigMutable()->receiverType = RX_TYPE_NONE;
+                rxRuntimeConfig.rcReadRawFn = nullReadRawRC;
+                rxRuntimeConfig.rcFrameStatusFn = nullFrameStatus;
+            }
+            break;
 #endif
 
         default:
@@ -460,7 +499,7 @@ bool calculateRxChannelsAndUpdateFailsafe(timeUs_t currentTimeUs)
     rxDataProcessingRequired = false;
     rxNextUpdateAtUs = currentTimeUs + DELAY_10_HZ;
 
-    // If RX is suspended, do not process any data
+        // If RX is suspended, do not process any data
     if (isRxSuspended) {
         return true;
     }
@@ -649,6 +688,7 @@ int16_t rxGetChannelValue(unsigned channelNumber)
         return rcChannels[channelNumber].data;
     }
 }
+
 
 void lqTrackerReset(rxLinkQualityTracker_e * lqTracker)
 {
