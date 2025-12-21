@@ -1,122 +1,123 @@
 # INAV - navigation capable flight controller
 
-# F411 PSA
-
-> INAV no longer accepts targets based on STM32 F411 MCU.
-
-> INAV 7 is the last INAV official release available for F411 based flight controllers. The next milestone, INAV 8 will not be available for F411 boards.
-
 ![INAV](http://static.rcgroups.net/forums/attachments/6/1/0/3/7/6/a9088858-102-inav.png)
 
-# PosHold, Navigation and RTH without compass PSA
+This modified unofficial version of INAV firmware brings back support for the MPU6050 as the main gyroscope of the flight controller. It also adds support for ADNS3080 as an optical flow sensor and nRF24L01+ as an SPI-based RX module.
 
-Attention all drone pilots and enthusiasts,
+Please note that the MPU6050 was removed starting from INAV 6.0.0 due to its limited sampling rate, internal DMP latency, and insufficient performance for modern high-loop-rate flight control. Despite these limitations, the MPU6050 can still be used reliably in low-performance, legacy, or experimental platforms, especially when operating at reduced loop frequencies and with conservative filter and PID settings.
 
-Are you ready to take your flights to new heights with INAV 7.1? We've got some important information to share with you.
+This fork is intended primarily for:
 
-INAV 7.1 brings an exciting update to navigation capabilities. Now, you can soar through the skies, navigate waypoints, and even return to home without relying on a compass. Yes, you heard that right! But before you launch into the air, there's something crucial to consider.
+- Legacy flight controller boards based on low-end F4 MCUs (STM32F411, STM32F405, etc)
+- Educational and experimental platforms
+- Resource-constrained builds where modern IMUs are unavailable
+- Research and development use cases (optical flow, SPI RX experimentation)
 
-While INAV 7.1 may not require a compass for basic navigation functions, we strongly advise you to install one for optimal flight performance. Here's why:
+**Important notes and limitations**
 
-🛰️ Better Flight Precision: A compass provides essential data for accurate navigation, ensuring smoother and more precise flight paths.
+- This firmware is based on INAV 7.1.0 and is not compatible with newer INAV releases
+- High gyro/loop rates are not recommended when using MPU6050
+- This fork is not officially supported by the INAV project
 
-🌐 Enhanced Reliability: With a compass onboard, your drone can maintain stability even in challenging environments, low speeds and strong wind.
+Use at your own risk; thorough ground and hover testing is strongly recommended
 
-🚀 Minimize Risks: Although INAV 7.1 can get you where you need to go without a compass, flying without one may result in a bumpier ride and increased risk of drift or inaccurate positioning.
+**Added / restored features**
 
-Remember, safety and efficiency are paramount when operating drones. By installing a compass, you're not just enhancing your flight experience, but also prioritizing safety for yourself and those around you.
+- Restored MPU6050 gyro support
+- ADNS3080 optical flow support over SPI
+- nRF24L01+ RX support over SPI
 
-So, before you take off on your next adventure, make sure to equip your drone with a compass. It's the smart choice for smoother flights and better navigation.
+This project aims to extend the usable life of older hardware and provide a functional firmware option where official INAV no longer supports these components.
 
-Fly safe, fly smart with INAV 7.1 and a compass by your side!
+---
+## HOW TO MAKE YOUR OWN BUILD
 
-# INAV Community
+This fork follows the standard INAV build system and workflow, with additional target definitions for legacy hardware and SPI-based peripherals.
 
-* [INAV Discord Server](https://discord.gg/peg2hhbYwN)
-* [INAV Official on Facebook](https://www.facebook.com/groups/INAVOfficial)
+**1. Target creation and selection**
 
-## Features
+INAV uses target folders to describe flight-controller hardware (MCU, pin mapping, peripherals, sensors, etc.).
+All modifications in this fork are implemented through custom targets, not by patching core logic.
 
-* Runs on the most popular F4, F7 and H7 flight controllers
-* MSP Displayport for all the HD Digital FPV systems: DJI, Walksnail and HDZero
-* Outstanding performance out of the box
-* Position Hold, Altitude Hold, Return To Home and Waypoint Missions
-* Excellent support for fixed wing UAVs: airplanes, flying wings
-* Blackbox flight recorder logging
-* Advanced gyro filtering
-* Fully configurable mixer that allows to run any hardware you want: multirotor, fixed wing, rovers, boats and other experimental devices
-* Multiple sensor support: GPS, Pitot tube, sonar, lidar, temperature, ESC with BlHeli_32 telemetry
-* Logic Conditions, Global Functions and Global Variables: you can program INAV with a GUI
-* SmartAudio and IRC Tramp VTX support
-* Telemetry: SmartPort, FPort, MAVlink, LTM, CRSF
-* Multi-color RGB LED Strip support
-* On Screen Display (OSD) - both character and pixel style
-* And many more!
+*Creating a new target:*
 
-For a list of features, changes and some discussion please review consult the releases [page](https://github.com/iNavFlight/inav/releases) and the documentation.
+Targets are located in: [src/main/target](https://github.com/MK384/inav-7.1.0-supports-legacy-hardware-and-nRF24/tree/Unofficial-7.1.0/src/main/target)
 
-## Tools
+To create a new target:
 
-### INAV Configurator
+- Copy an existing target that is close to your hardware (MCU family, pinout, flash size).
+- Rename the folder to match your new target name (uppercase is recommended).
+- Adjust the configuration files inside the folder to match your board.
 
-Official tool for INAV can be downloaded [here](https://github.com/iNavFlight/inav-configurator/releases). It can be run on Windows, MacOS and Linux machines and standalone application.
+**Example target: BLACKPILL_F411**
 
-### INAV Blackbox Explorer
+This repository includes an example target named: [BLACKPILL_F411](https://github.com/MK384/inav-7.1.0-supports-legacy-hardware-and-nRF24/tree/Unofficial-7.1.0/src/main/target/BLACKPILL_F411)
 
-Tool for Blackbox logs analysis is available [here](https://github.com/iNavFlight/blackbox-log-viewer/releases)
+This target demonstrates:
 
-### INAV Blackbox Tools
+- MPU6050 as the main gyro (I2C)
+- ADNS3080 optical flow sensor over SPI
+- nRF24L01+ RX module over SPI
+- In addition to other INAV-supported hardware, such as BMP280, HMC5883L, VL53L1x, Neo-6M GPS, and SD-Card module, it serves as a blackbox.
 
-Command line tools (`blackbox_decode`, `blackbox_render`) for Blackbox log conversion and analysis [here](https://github.com/iNavFlight/blackbox-tools).
+![FC](https://github.com/user-attachments/assets/ef9e082b-ebb3-4491-8f6d-7b51fb34d089)
+![GPS](https://github.com/user-attachments/assets/9172cd12-0d69-4dac-9f3a-cf85c3f654c4)
+![SD-Card](https://github.com/user-attachments/assets/5c4be0f2-97b5-47c1-8e27-82f4e859fd7c)
+![ADNS3080](https://github.com/user-attachments/assets/1a80c5de-dce3-48e7-94c5-2f3cc1fb8342)
 
-### Telemetry screen for EdgeTX and OpenTX
+If your hardware is similar, you can:
 
-Users of EdgeTX and OpenTX radios (Taranis, Horus, Jumper, Radiomaster, Nirvana) can use INAV OpenTX Telemetry Widget screen. Software and installation instruction are available here: [https://github.com/iNavFlight/OpenTX-Telemetry-Widget](https://github.com/iNavFlight/OpenTX-Telemetry-Widget)
+- Use this target as-is
+- Or copy it and modify pin assignments and peripheral enables as needed. You can do so through the [target.h](https://github.com/MK384/inav-7.1.0-supports-legacy-hardware-and-nRF24/blob/Unofficial-7.1.0/src/main/target/BLACKPILL_F411/target.h) and [target.c](https://github.com/MK384/inav-7.1.0-supports-legacy-hardware-and-nRF24/blob/Unofficial-7.1.0/src/main/target/BLACKPILL_F411/target.c) files.
 
-### OSD layout Copy, Move, or Replace helper tool
+<img width="797" height="732" alt="image" src="https://github.com/user-attachments/assets/254409e2-06ca-4404-a44c-7a01c9b98c2a" />
 
-[Easy INAV OSD switcher tool](https://www.mrd-rc.com/tutorials-tools-and-testing/useful-tools/inav-osd-switcher-tool/) allows you to easily switch your OSD layouts around in INAV. Choose the from and to OSD layouts, and the method of transfering the layouts.
+**And here's a schematic for the current configuration if you aim to use it as it is**
 
-## Installation
+// TO DO: add the FC schematic
 
-See: https://github.com/iNavFlight/inav/blob/master/docs/Installation.md
+**2. Required tools**
 
-## Documentation, support and learning resources
-* [INAV 5 on a flying wing full tutorial](https://www.youtube.com/playlist?list=PLOUQ8o2_nCLkZlulvqsX_vRMfXd5zM7Ha)
-* [INAV on a multirotor drone tutorial](https://www.youtube.com/playlist?list=PLOUQ8o2_nCLkfcKsWobDLtBNIBzwlwRC8)
-* [Fixed Wing Guide](docs/INAV_Fixed_Wing_Setup_Guide.pdf)
-* [Autolaunch Guide](docs/INAV_Autolaunch.pdf)
-* [Modes Guide](docs/INAV_Modes.pdf)
-* [Wing Tuning Masterclass](docs/INAV_Wing_Tuning_Masterclass.pdf)
-* [Official documentation](https://github.com/iNavFlight/inav/tree/master/docs)
-* [Official Wiki](https://github.com/iNavFlight/inav/wiki)
-* [Video series by Paweł Spychalski](https://www.youtube.com/playlist?list=PLOUQ8o2_nCLloACrA6f1_daCjhqY2x0fB)
-* [Target documentation](https://github.com/iNavFlight/inav/tree/master/docs/boards)
+The build system is identical to upstream INAV and is based on GNU Make.
 
-## Contributing
+Operating system
 
-Contributions are welcome and encouraged.  You can contribute in many ways:
+- Linux (recommended)
+- macOS
+- Windows (via WSL or MSYS2)
 
-* Documentation updates and corrections.
-* How-To guides - received help?  help others!
-* Bug fixes.
-* New features.
-* Telling us your ideas and suggestions.
-* Buying your hardware from this [link](https://inavflight.com/shop/u/bg/)
+Toolchain
+- INAV requires a reasonably modern gcc-arm-none-eabi cross-compiler.
+  
+Note: To provide a uniform and reasonably modern cross compiler, INAV provides for the installation of a "known good / working" cross compiler, as well as a mechanism to override this if your distro provides a more modern option. That's it, the Inav MAKE script will install a suitable ARM cross compiler automatically. 
 
-A good place to start is the Discord channel, Telegram channel or Facebook group. Drop in, say hi.
+**In addition to a cross-compiler, it is necessary to install some other tools:**
 
-Github issue tracker is a good place to search for existing issues or report a new bug/feature request:
+- git : clone and manage the INAV code repository
+- cmake : generate the build environment
+- make : run the firmware compilation
+- ruby : build some generated source files from JSON definitions
+- gcc : native compiler used to generate settings and run tests
 
-https://github.com/iNavFlight/inav/issues
+Note that INAV requires cmake version 3.13 or later; any distro that provides cmake 3.13 will also provide adequate versions of the other tools.
 
-https://github.com/iNavFlight/inav-configurator/issues
+```
+cd inav
+# first time only, create the build directory
+mkdir build
+cd build
+cmake ..
+# note the "..", this is required as it tells cmake where to find its ruleset
+```
+Once cmake has generated the build/Makefile, this Makfile (with make) is used to build the firmware, again from the build directory.
+```
+make BLACKPILL_F411
+```
+The resultant hex file are in the build directory.
 
-Before creating new issues please check to see if there is an existing one, search first otherwise you waste peoples time when they could be coding instead!
+See: [Building in Linux.md](https://github.com/MK384/inav-7.1.0-supports-legacy-hardware-and-nRF24/blob/Unofficial-7.1.0/docs/development/Building%20in%20Linux.md) for more info.
 
-## Developers
-
-Please refer to the development section in the [docs/development](https://github.com/iNavFlight/inav/tree/master/docs/development) folder.
-
-## INAV Releases
-https://github.com/iNavFlight/inav/releases
+![drone1](https://github.com/user-attachments/assets/b40e8c5c-77ec-41ad-8f63-cbff920c69c9)
+![drone2](https://github.com/user-attachments/assets/99cf49c9-9865-4cbc-89cb-49369ecd94b3)
+![drone3](https://github.com/user-attachments/assets/deafb0c5-a9b0-4715-b7b4-8683fecffc69)
+![drone4](https://github.com/user-attachments/assets/765957ca-dd25-4ac0-b78b-a2b3249a0a3a)
