@@ -104,7 +104,7 @@ typedef struct {
 	uint16_t CH_Elevator;
 	uint16_t CH_Throttle;
 	uint16_t CH_Rudder;
-	uint16_t CH_Aux;
+	uint8_t AUX[NRF24_AUX_CHANNEL_COUNT]; // aux channels [5, 16] .. channel value is divided by 8 to fit in 8 bits
     // Protocol purposes
     uint8_t PKT_Counter;
     uint8_t LTM_Period;
@@ -116,7 +116,7 @@ static nrf24_frame_t nrf24_frame = {
 		.CH_Elevator = 1500,
 		.CH_Throttle = 1000,
 		.CH_Rudder   = 1500,
-		.CH_Aux      = 0U,
+        .AUX = {125},
         .PKT_Counter = 0,
         .LTM_Period  = 100U,
 };
@@ -178,9 +178,9 @@ static uint8_t decodeNRF24Frame(rxRuntimeConfig_t *rxRuntimeConfig){
     nrf24ChannelData[1]  = nrf24_frame.CH_Elevator;
     nrf24ChannelData[2]  = nrf24_frame.CH_Throttle;
     nrf24ChannelData[3]  = nrf24_frame.CH_Rudder;
-    for (size_t ix = 4; ix < NRF24_MAX_CHANNEL; ix++)
+    for (size_t ix = 4, idx = 0; ix < NRF24_MAX_CHANNEL && idx < NRF24_AUX_CHANNEL_COUNT; ix++, idx++)
     {
-        nrf24ChannelData[ix] = (nrf24_frame.CH_Aux & (1 << ix))? 2000 : 1000;
+        nrf24ChannelData[ix] = (uint16_t)(nrf24_frame.AUX[idx] << 3);
     }
 
     if (recPackets >= PKTS_IN_RSSI_SLIDING_WINDOW){
@@ -240,8 +240,6 @@ static uint8_t inavNrf24Setup(void)
 	  
 	  return 1;
 }
-
-
 bool inavNrf24Init(const rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig)
 {
     UNUSED(rxConfig);
